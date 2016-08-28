@@ -1,0 +1,124 @@
+.fancy-select {
+	position: relative;
+	font-family: $helvetica-neue;
+	font-weight: 300;
+	font-size: 15px;
+	color: $dark-gray;
+	letter-spacing: 1px;
+	-webkit-touch-callout: none;
+    user-select: none;
+	margin-bottom: 15px;
+	
+	&.disabled {
+		opacity: 0.5;
+	}
+	
+	select:focus + div.trigger {
+		&.open {
+			box-shadow: none;
+		}
+	
+	}
+	
+	.trigger {
+		@include border-radius(4px);
+		cursor: pointer;
+		padding: 13px 24px 14px 12px;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		position: relative;
+		background: $light-gray;
+		color: $dark-gray;
+		min-width: 100px;
+		transition: all 240ms ease-out;
+		
+		&:after {
+			content: "";
+			display: block;
+			position: absolute;
+			width: 0;
+			height: 0;
+			border: 5px solid transparent;
+			border-top-color: $dark-gray;
+			top: 18px;
+			right: 9px;
+		}
+		
+		&.open {
+			background: $dark-gray;
+			color: #FFF;
+			box-shadow: none;
+			@include border-radius(4px, 0px);
+			
+			&:after {
+				border-top-color: #FFF;
+			}
+		}
+	}
+	
+	.options {
+		list-style: none;
+		margin: 0;
+		position: absolute;
+		top: 100%;
+		left: 0;
+		right: 0;
+		visibility: hidden;
+		opacity: 0;
+		z-index: 50;
+		max-height: 200px;
+		overflow: auto;
+		background: $lighter-gray;
+		@include border-radius(4px);
+		min-width: 100px;
+		transition: opacity 300ms ease-out, top 300ms ease-out, visibility 300ms ease-out;
+		
+		&.open {
+			visibility: visible;
+			opacity: 1;
+			@include border-radius(0px, 4px);
+			transition: opacity 300ms ease-out, top 300ms ease-out;
+		}
+		
+		&.overflowing {
+			top: auto;
+			bottom: 40px;
+			transition: opacity 300ms ease-out, bottom 300ms ease-out, visibility 300ms ease-out;
+			
+			&.open {
+				top: auto;
+				bottom: 50px;
+				transition: opacity 300ms ease-out, bottom 300ms ease-out;
+			}
+		}
+		
+		li {
+			padding: 12px 12px;
+			color: $dark-gray;
+			cursor: pointer;
+			white-space: nowrap;
+			transition: all 150ms ease-out;
+			
+			&.hover {
+				background: $gray;
+				color: #FFF;
+			}
+			
+			&.selected {
+				background: $green;
+				color: #FFF;
+				
+				&:hover {
+					background: $dark-green;
+				}
+			}
+			
+			&.create-class-type {
+				background: $light-gray;
+				color: $dark-gray;	
+				border-top: solid 2px #FFF;
+			}
+		}
+	}
+}

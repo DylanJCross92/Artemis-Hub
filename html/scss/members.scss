@@ -1,0 +1,86 @@
+.members-page {
+	
+	.members-list {
+		@extend %list-items;	
+		
+		.alphabetical-headers {
+			/*color: $dark-gray;
+			font-size: 25px;
+			font-weight: 200;
+			margin-bottom: 10px;	*/
+		}
+			
+		> li {
+			
+			.multi-col {
+				.col {
+					border-left: solid 2px $lighter-gray;
+					padding-left: 15px;
+					text-align: center;
+					
+					&.thumbnail-wrapper {
+						width: 75px;
+						border-left: none;
+						padding-left: 0px;
+					}
+					
+					&.member-info {
+						border-left: none;
+						padding-left: 0px;
+						width: 200px;
+						text-align: left;
+						
+						.role {
+							font-size: 16px;
+							letter-spacing: 0.5px;
+							color: $gray;
+						}
+					}
+					
+					&.phone-number {
+							
+					}
+					
+					&.address {
+						
+					}
+					
+					&.edit {
+						width: 150px;	
+					}
+				}
+			}
+			
+			&.admin {
+				border-left-color: $green;
+				
+				.multi-col {
+					.col {
+						&.member-info {
+							.role {
+								color: $green;	
+							}
+						}
+					}
+				}
+				
+			}
+			
+			&.instructor {
+				border-left-color: $blue;
+				
+				.multi-col {
+					.col {
+						&.member-info {
+							.role {
+								color: $blue;	
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	
+}

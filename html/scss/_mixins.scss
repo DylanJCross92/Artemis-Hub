@@ -1,0 +1,101 @@
+/* 
+	Fonts
+*/
+
+$helvetica-neue: "Helvetica Neue", sans-serif;
+$gotham-book: "Gotham Book", sans-serif;
+
+/* 
+	Colors
+*/
+$orange: #f55e2d;
+$dark-orange: darken($orange, 5%);
+$lightest-gray: #f5f7fa;
+$lighter-gray: #ebeff2;
+$light-gray: #d4d9df;
+$gray: #b9bfc9;
+$dark-gray: #79818c;
+$darker-gray: #555d67;
+$darkest-gray: #434a54;
+$green: #54d6bb;
+$dark-green: #3ec6aa;
+$yellow: #ffd666;
+$dark-yellow: #f8c551;
+$red: #f36c78;
+$dark-red: #e35c64;
+$blue: #3498DB;
+$purple: #9B59B6;
+
+$background-color: $lighter-gray; 
+$light-text-gray: $dark-gray;
+$text-gray: $darker-gray;
+
+$h1-color: $dark-gray;
+
+/* 
+	@content
+*/
+
+@mixin placeholder {
+  &::-webkit-input-placeholder {@content}
+  &:-moz-placeholder           {@content}
+  &::-moz-placeholder          {@content}
+  &:-ms-input-placeholder      {@content}  
+}
+
+@mixin box-shadow($top, $left, $blur, $color: rgba(#000, 0.1), $inset: false) {
+  @if $inset {
+    -webkit-box-shadow:inset $top $left $blur $color;
+    -moz-box-shadow:inset $top $left $blur $color;
+    box-shadow:inset $top $left $blur $color;
+  } @else {
+    -webkit-box-shadow: $top $left $blur $color;
+    -moz-box-shadow: $top $left $blur $color;
+    box-shadow: $top $left $blur $color;
+  }
+}
+
+@mixin border-radius($first-radius, $second-radius: false, $third-radius: false, $fourth-radius: false) {
+	
+	@if $first-radius and $second-radius == false {
+		border-radius: $first-radius;	
+	}
+	@elseif $first-radius and $second-radius and $third-radius == false
+	{
+		border-top-left-radius: $first-radius;
+		border-top-right-radius: $first-radius;
+		border-bottom-left-radius: $second-radius;
+		border-bottom-right-radius: $second-radius;
+	}
+	@elseif 
+	{
+		@if $first-radius != false {border-top-left-radius: $first-radius; }
+		@if $second-radius != false {border-top-right-radius: $second-radius }
+		@if $third-radius != false {border-bottom-left-radius: $third-radius }
+		@if $fourth-radius != false {border-bottom-right-radius: $fourth-radius }
+	}
+}
+
+@mixin position($top: auto, $left: auto, $right: auto, $bottom: auto) {
+	top: $top;
+	left: $left;
+	right: $right;
+	bottom: $bottom;	
+}
+
+@keyframes rotating {
+  from {
+    -ms-transform: rotate(0deg);
+    -moz-transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  to {
+    -ms-transform: rotate(360deg);
+    -moz-transform: rotate(360deg);
+    -webkit-transform: rotate(360deg);
+    -o-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}

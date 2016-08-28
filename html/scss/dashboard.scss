@@ -1,0 +1,123 @@
+.dashboard-page {
+	
+	.schedule {
+		display: table;
+		width: 100%;
+		
+		> li {
+			display: table-cell;
+			vertical-align: top;
+			line-height: normal;
+			padding: 0px;
+		
+			.heading {
+				text-align: left;
+				padding-left: 15px;
+				
+				.date {
+					color: $dark-gray;
+					font-size: 30px;
+					font-weight: 200;
+				}
+				
+				.day {
+					color: $dark-gray;
+					font-size: 18px;
+					font-weight: 300;
+				}
+			}
+			
+			&.today {
+				.heading {
+					.date {
+						color: $blue;	
+					}
+					
+					.day {
+						color: $blue;
+					}
+				}
+			}
+			
+			&:not(:first-child) {
+				/*border-left: solid 1px $light-gray;*/
+			}
+			
+			.list {
+				margin-top: 15px;
+				
+				> li {
+					font-size: 20px;
+					display: block;
+					padding: 15px;
+					margin: 10px 10px 0px 10px;
+					border-left: solid 3px $gray;
+					@include border-radius(5px);
+					@include box-shadow(0px, 0px, 7px);
+					background: #FFF;
+					cursor: pointer;
+					
+					&:hover {
+						@include box-shadow(0px, 0px, 7px);
+						background: $lightest-gray;
+					}
+					
+					.datetime {
+						font-size: 16px;	
+						line-height: 16px;
+						color: $darker-gray;
+						font-weight: 300;
+						margin-bottom: 5px;
+					}
+					
+					.details {
+						font-size: 15px;
+						line-height: 20px;
+						font-weight: 200;
+						color: $dark-gray;
+							
+						.title {
+							color: $orange;
+							font-weight: 300;
+						}
+						
+						.instructor {
+							color: $darker-gray;
+							font-weight: 300;
+						}
+						
+						a:hover {
+							text-decoration: underline;
+						}
+					}
+					
+					$colors: (
+					'dark-yellow': $dark-yellow, 
+					'dark-gray': $dark-gray, 
+					'orange': $orange, 
+					'blue': $blue,
+					'red' : $red,
+					'dark-green' : $dark-green,
+					'purple' : $purple,
+					);
+
+					@each $name, $value in $colors {
+						&.#{$name} { 
+							border-left-color: $value; 
+						}
+					}
+
+					&.full {
+						background: $light-gray;	
+						
+						* {
+							color: $dark-gray !important;	
+						}
+					}
+				}
+			}
+		}
+	}
+
+	
+}

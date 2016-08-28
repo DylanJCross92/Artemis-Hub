@@ -1,0 +1,52 @@
+@media screen and (max-width: 1660px) {
+	
+	.dashboard-container {
+		
+		.header-wrapper {
+			.sidebar {
+				width: 100px;
+				min-width: 100px;	
+			}
+			.action-bar {
+				display: none;	
+			}
+		}
+		
+		.content-wrapper {
+			.sidebar {
+				width: 200px;	
+				min-width: 200px;
+			}
+			
+			.action-bar {
+				display: none;
+			}
+		}
+	}
+				
+	
+	.class-list {
+		> li {
+			.multi-col {
+				.col {
+					&.students {
+						display: none;	
+					}
+				}
+			}
+		}
+	}
+	
+	.members-list {
+		> li {
+			.multi-col {
+				.col {
+					&.address {
+						display: none;	
+					}
+				}
+			}
+		}
+	}
+	
+}

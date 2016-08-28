@@ -1,0 +1,73 @@
+@import "../html/scss/mixins";
+@import "../html/scss/_main";
+
+.login-wrapper {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	margin-top: -225px;
+	margin-left: -275px;
+	text-align: center;
+	width: 550px;
+	height: 450px;
+	box-sizing: border-box;
+	padding: 0px 50px;
+	
+	input {
+		background: $lightest-gray;	
+	}
+	
+	.login-container {
+		background: #FFF;
+		padding: 25px;
+		@include border-radius(5px);	
+		
+		.header {
+			margin-bottom: 25px;
+			
+			.asterisk-logo {
+				width: 75px;
+				height: 75px;	
+			}
+			
+			.login-tagline {
+				font-family: $helvetica-neue;
+				color: $dark-gray;
+				text-transform: uppercase;
+				letter-spacing: 1px;
+				padding: 15px 0px;
+				font-size: 22px;
+				vertical-align: baseline;
+				
+				.arrow {
+					font-size: 75%;	
+					color: $dark-gray;
+					vertical-align:baseline;
+					display: inline-block;
+				}
+				
+				.highlight {
+					color: $orange;
+				}
+			}
+		}
+		
+		.signin-btn {
+			display: block;	
+			margin-bottom: 15px;
+		}
+		
+		.forgot-password {
+			font-size: 14px;	
+			font-weight: 300;
+		}
+	}
+	
+	.copyright {
+		padding: 15px 0px;
+		font-size: 12px;
+		color: $dark-gray;
+		text-transform: uppercase;	
+		letter-spacing: 1px;	
+	}
+}
