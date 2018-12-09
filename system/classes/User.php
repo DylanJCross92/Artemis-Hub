@@ -2,39 +2,114 @@
 
 class User {
 	
-	protected $_Database;
-	protected $_UserID;
+	protected $_db;
+	protected $_user_id;
 	
 	public function __construct(){
-		$this->_Database = new Database;
-		$this->_UserID = $this->user_id();
+		$this->_db = new DatabaseAccessor;
+		$this->_user_id = $this->user_id();
 	}
 	
 	public static function user_id() {
 		return isset($_SESSION["user_id"]) ? $_SESSION["user_id"] : false;
 	}
 	
+
+	/*
+		Checks if email exists in the database
+	*/
+	public function check_user_by_email($email) {
+		
+		$db_safe_email = strtolower($this->_db->sanitize_db($email));
+		
+		$sql = "SELECT users.* FROM users WHERE `email` = $db_safe_email";
+		return $this->_db->query($sql)->num_rows > 0 ? $this->_db->query($sql)->fetch_assoc() : false;
+	}
+	
+	/*
+		Add new user to the database
+	*/
+	public function add_user($email, $password) {
+		
+		$db_safe_email = strtolower($this->_db->sanitize_db($email));
+		$db_safe_encrypted_password = $this->_db->sanitize_db(password_hash($password, PASSWORD_BCRYPT)); 
+		$last_login_date = time();
+		$join_date = time();
+		
+		if(!$this->check_user_by_email($email))
+		{
+			$sql = "INSERT INTO users (`email`, `password`, `last_login_date`, `join_date`) VALUES ($db_safe_email, $db_safe_encrypted_password, $last_login_date, $join_date)";
+			$query = $this->_db->query($sql);
+			$user_id = $this->_db->getConnection()->insert_id;
+			
+			//Create a customer account in Stripe for later use
+			$Stripe = new StripeAccessor;
+			$customer_data = $Stripe->create_customer(array("email" => $email));
+			$customer_id = $customer_data->id;
+			
+			$DBStripeAccessor = new DBStripeAccessor;
+			$DBStripeAccessor->update_customer_id($user_id, $customer_id);
+			
+			return $query ? $query : false;
+		}
+	}
+	/*
+		If everything is legitimate, log the user in
+	*/
+	public function login_user($email, $password)
+	{
+		try
+		{
+			$user_data = $this->check_user_by_email($email);
+			
+			$this->_user_id = $user_data["id"];
+			$db_email = strtolower($user_data["email"]);
+			$db_encrypted_password = $user_data["password"];
+			
+			if($db_email == strtolower($email) && password_verify($password, $db_encrypted_password))
+			{
+				//Create Sessions
+				$this->logout_user();
+				
+				Session::set_session("logged_in", true);
+				Session::set_session("user_id", $this->_user_id);
+				
+				//Create a login Token
+				
+				User::set_token($this->_user_id);
+				
+				$DBStripeAccessor = new DBStripeAccessor; 
+				$customer_id = $DBStripeAccessor->get_customer_id($this->_user_id);
+				$DBStripeAccessor->sync_stripe_info($customer_id);
+				
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		catch(Exception $e)
+		{
+			return false;	
+		}
+	}
+	
 	public static function set_token($user_id) 
 	{
 		if($user_id)
 		{
-			$_Database = new Database;
+			$_db = new DatabaseAccessor;
 
 			$token = hash('sha256', bin2hex(openssl_random_pseudo_bytes(32)));
 			$expiration_date = time() + 60 * 60 * 24 * 7;
-			$db_safe_user_id = $_Database->sanitize_db($user_id);
-			$db_safe_token = $_Database->sanitize_db($token);
-			$db_safe_expiration_date = $_Database->sanitize_db($expiration_date);
-			$db_safe_date = $_Database->sanitize_db(time());
+			$db_safe_user_id = $_db->sanitize_db($user_id);
+			$db_safe_token = $_db->sanitize_db($token);
+			$db_safe_expiration_date = $_db->sanitize_db($expiration_date);
+			$db_safe_date = $_db->sanitize_db(time());
 			
-			//$_Database->query("DELETE FROM user_auth_tokens WHERE `userID` = $db_safe_user_id");
-		
-			$_Database->insert("user_auth_tokens", "isii", array(
-				"userID" => $db_safe_user_id,
-				"token" => $db_safe_token,
-				"expires" => $db_safe_expiration_date,
-				"date" => $db_safe_date
-			));
+			$_db->query("DELETE FROM user_auth_tokens WHERE `user_id` = $db_safe_user_id");
+			$query = $_db->query("INSERT INTO user_auth_tokens SET `user_id` = $db_safe_user_id, `token` = $db_safe_token, `expires` = $db_safe_expiration_date, `date` = $db_safe_date");
 			
 			Session::set_cookie("auth", base64_encode($token), time() + 60*60*24*7);
 		}
@@ -47,19 +122,18 @@ class User {
 		{
 			$cookie_token = $_COOKIE["auth"];
 			
-			$Database = new Database;
-			$db_safe_token = $Database->sanitize_db(base64_decode($cookie_token));
+			$DatabaseAccessor = new DatabaseAccessor;
+			$db_safe_token = $DatabaseAccessor->sanitize_db(base64_decode($cookie_token));
 			
-			//$query = $_Database->query("SELECT user_auth_tokens.* FROM user_auth_tokens WHERE `token` = $db_safe_token");
-			$user_auth_token = $Database->select("user_auth_tokens", "s", array(
-				"token" => $db_safe_token
-			));
-
-			if(count($user_auth_token) > 0)
+			$query = $DatabaseAccessor->query("SELECT user_auth_tokens.* FROM user_auth_tokens WHERE `token` = $db_safe_token");
+			
+			if($query->num_rows > 0)
 			{
-				$db_user_id = $user_auth_token[0]["userID"];
-				$db_token = $user_auth_token[0]["token"];
-				$db_expiration_date = $user_auth_token[0]["expires"];
+				$row = $query->fetch_assoc();
+				
+				$db_user_id = $row["user_id"];
+				$db_token = $row["token"];
+				$db_expiration_date = $row["expires"];
 				
 				if($db_expiration_date > time())
 				{
@@ -84,115 +158,19 @@ class User {
 			}
 		
 		}
-		else
-		{
-			return false;	
-		}
-	}
-	
-	/* 
-		Check if email is registered
-	*/
-	public function is_email_registered($email) {
-		
-		$is_email_registered = $this->_Database->select("users", "s", array(
-			"email" => $email
-		));	
-		
-		return count($is_email_registered) != 0;
-	}
-	
-	/*
-		Check if user is activated 
-	*/
-	public function is_user_activated($email) {
-		
-	}
-	
-	/*
-		Add new user to the database
-	*/
-	public function create_user($email, $password = false) {
-		
-		if(!$this->is_email_registered($email))
-		{
-			$db_safe_email = strtolower($this->_Database->sanitize_db($email));
-			
-			if($password)
-			{	
-				$db_safe_encrypted_password = $this->_Database->sanitize_db(password_hash($password, PASSWORD_BCRYPT)); 
-				$db_safe_status = $this->_Database->sanitize_db("registered");
-				
-				$this->_Database->insert("users", "ssi", array(
-					"email" => $db_safe_email,
-					"password" => $db_safe_encrypted_password,
-					"user_status" => $db_safe_status,
-					"join_date" => time()
-				));
-			}
 			else
 			{
-				$db_safe_activation_key = $this->_Database->sanitize_db(substr(sha1(rand()), 0, 14));
-				
-				$this->_Database->insert("users", "ssi", array(
-					"email" => $db_safe_email,
-					"user_activation_key" => $db_safe_activation_key,
-					"join_date" => time()
-				));	
+				return false;	
 			}
-			
-			$this->_UserID = $this->_Database->getConnection()->insert_id;
-			return isset($this->_UserID) ? $this->_UserID : false; 
-		}
-		else
-		{
-			return false;	
-		}
 	}
-	/*
-		If everything is legitimate, log the user in
-	*/
-	public function login_user($email, $password)
-	{
-		try
-		{
-			$user_data = $this->get_user_by_email($email);
-			
-			$this->_UserID = $user_data["ID"];
-			$db_email = strtolower($user_data["email"]);
-			$db_encrypted_password = $user_data["password"];
-			
-			if($db_email == strtolower($email) && password_verify($password, $db_encrypted_password))
-			{
-				//Create Sessions
-				$this->logout_user();
-				
-				Session::set_session("logged_in", true);
-				Session::set_session("user_id", $this->_UserID);
-				
-				//Create a login Token
-				User::set_token($this->_UserID);
-				
-				return true;
-			}
-			else
-			{
-				return false;
-			}
-		}
-		catch(Exception $e)
-		{
-			return false;	
-		}
-	}
-	
 	
 	/*
 		Check if the user is logged in
 	*/
 	public static function is_logged_in() 
 	{
-		$session_logged_in = self::user_id() && isset($_SESSION['logged_in']) && $_SESSION['logged_in'];
+		$User = new User;
+		$session_logged_in = $User->get_user(User::user_id()) && isset($_SESSION['logged_in']) && $_SESSION['logged_in'];
 		
 		if($session_logged_in)
 		{
@@ -231,74 +209,71 @@ class User {
 		return true;
 	}
 	
-	/*
-		Get user info by email
-	*/
-	public function get_user_by_email($email) {
+	public static function subscription_status($user_id){
 		
-		$db_safe_email = strtolower($this->_Database->sanitize_db($email));
-		$user_info = $this->_Database->select("users", "s", array("email" => $db_safe_email))[0];
-				
-		return isset($user_info) ? $user_info : false;
+		$DBStripeAccessor = new DBStripeAccessor;
+		$subscription_status = $DBStripeAccessor->get_subscription_status($user_id);
+	
+		return $subscription_status;
+	}
+	
+	public static function subscription_active($user_id){
+	
+		return User::subscription_status($user_id) == "active" ? true : false;
 	}
 	
 	/*
 		Get the user data from user's id
 	*/
-	public function get_user_info($userID = false)
+	public static function get_user($user_id)
 	{
-		$userID = $userID ? $userID : $this->_UserID;
-		$db_safe_user_id = $this->_Database->sanitize_db($userID);
-		$user_info = $this->_Database->select("users", "i", array("ID" => $db_safe_user_id));
-				
-		return count($user_info) > 0 ? $user_info[0] : false;
+		$User = new User;
+		$db_safe_user_id = $User->_db->sanitize_db($user_id);
+		
+		$sql = "SELECT users.* FROM users WHERE `id` = $db_safe_user_id";
+		return $User->_db->query($sql)->num_rows > 0 ? $User->_db->query($sql)->fetch_assoc() : false;	
 	}
 	
-	public function get_user_company_id($userID = false) 
-	{
-		$userID = $userID ? $userID : $this->_UserID;
-		$db_safe_user_id = $this->_Database->sanitize_db($userID);
+	public static function user_email($user_id) {
 		
-		$company_users_info = $this->_Database->select("company_users", "i", array("userID" => $db_safe_user_id));
+		$user_data = self::get_user($user_id);
+		$user_email = $user_data["email"];
 		
-		return count($company_users_info) > 0 ? $company_users_info[0]["companyID"] : false;
+		return isset($user_email) ? $user_email : false;	
 	}
 	
-	/* 
-		Update User Meta Data
-	*/
-	public function update_usermeta($userID, array $data) 
-	{	
-		//TODO: If keys exist, update it
+	public static function last_login_date($user_id) {
 		
-		foreach($data as $key => $value) {
-			
-			$db_safe_key = $this->_Database->sanitize_db($key);
-			$db_safe_value = $this->_Database->sanitize_db($value);
-			
-			$this->_Database->insert("user_meta", "iss", array(
-				"userID" => $userID,
-				"meta_key" => $db_safe_key,
-				"meta_value" => $db_safe_value
-			));	
+		$user_data = self::get_user($user_id);
+		$last_login_date = $user_data["last_login_date"];
+		
+		return isset($last_login_date) ? $last_login_date : false;	
+	}
+	
+	public static function join_date($user_id) {
+		
+		$user_data = $this->get_user($user_id);
+		$join_date = $user_data["join_date"];
+		
+		return isset($join_date) ? $join_date : false;	
+	}
+	
+	public static function user_full_name($user_id) {
+		return false;	
+	}
+	
+	public static function user_view_name($user_id) {
+		
+		if(!$username = self::user_full_name($user_id))
+		{
+			$username = ucwords(explode("@", self::user_email($user_id))[0]);	
 		}
+		
+		return $username;
+			
 	}
 	
-	/* 
-		Get User Meta Data 
-	*/
-	public function get_usermeta($userID, $key) 
-	{
-		$db_safe_user_id = $this->_Database->sanitize_db($userID);
-		$db_safe_key = $this->_Database->sanitize_db($key);
-		
-		$user_metadata = $this->_Database->select("user_meta", "is", array(
-			"userID" => $db_safe_user_id,
-			"meta_key" => $db_safe_key
-		));
-		
-		return count($user_metadata) > 0 ? $user_metadata[0]["meta_value"] : false;
-	}
+	
 	
 }
 

@@ -1,0 +1,124 @@
+.sign-in-register-wrapper   {
+	color: #FFF;
+	background-color: #663399;
+	font-size: 14px;
+	line-height: 14px;
+	border-bottom-left-radius: 5px;
+	border-bottom-right-radius: 5px;
+	padding-top: 10px;
+	padding-right: 15px;
+	padding-bottom: 10px;
+	padding-left: 15px;
+	float: right;
+}
+
+.sign-in-register-wrapper .spacer{
+	display: inline-block;
+	vertical-align: middle;
+	border-left: solid 1px #FFF;
+	margin-right: 10px;
+	margin-left: 10px;
+	height: 14px;
+	font-size: 0px;
+	line-height: 0px;
+}
+
+.sign-in-register-wrapper a {
+	color: #FFF;
+	text-decoration: none;
+	font-weight: 300;
+	margin: 0px;
+	padding: 0px;
+	vertical-align: middle;
+	display: inline-block;
+}
+.sign-in-register-wrapper a:before {
+	margin-right: 5px;
+}
+.sign-in-register-wrapper a:hover {
+	text-decoration: underline;
+}
+
+.login-wrapper {
+	margin-left: auto;
+	margin-right: auto;
+	margin-top: 0px;
+	margin-bottom: 100px;
+	box-sizing: border-box;
+	width: 600px;
+	background-color: rgba(255,255,255, 1);
+	padding: 50px;
+	border-top-width: 5px;
+	border-top-style: solid;
+	border-top-color: #663399;
+	border-bottom-left-radius: 5px;
+	border-bottom-right-radius: 5px;
+	-moz-border-bottom-left-radius: 5px;
+	-moz-border-bottom-right-radius: 5px;
+	-webkit-border-bottom-left-radius: 5px;
+	-webkit-border-bottom-right-radius: 5px;
+}
+.login-wrapper .top-wrapper {
+	margin-top: -50px;	
+	text-align: right;
+}
+.login-wrapper .top-wrapper .sign-in-register-wrapper {
+	float: none;
+	display: inline-block;
+	vertical-align: middle;
+	
+}
+.login-wrapper .top-wrapper .forgot-password {
+	color: #6c7a89;
+	margin-right: 15px;
+	float: none;
+	display: inline-block;
+	vertical-align: middle;
+	font-size: 15px;
+	line-height: 15px;		
+}
+.login-wrapper .site-logo {
+	text-align: center;
+	margin-top: 50px;
+	margin-bottom: 50px;
+	display: block;
+}
+
+.login-wrapper .site-logo .logo {
+	width: 350px;	
+}
+.login-wrapper .input {
+	box-sizing: border-box;
+	width: 100%;
+	
+	margin-bottom: 25px;
+	font-size: 20px;
+	line-height: 25px;
+	color: #6c7a89;
+	font-weight: 300;
+	text-align: center;
+	
+	display: inline-block;
+}
+.login-wrapper .input-wrapper {
+	white-space: nowrap;		
+}
+.login-wrapper .input-wrapper [class^='icon']:before {
+	width: 35px;
+	margin-right: -35px;
+	color: #6c7a89;
+	font-size: 25px;
+	position: relative;
+	z-index: 1;
+	padding: 0px;
+	margin-top: 0px;
+	margin-bottom: 0px;
+	margin-left: 0px;	
+	display: none;
+
+}
+.login-wrapper .login {
+	width: 100%;
+	box-sizing: border-box;
+	text-align: center;
+}

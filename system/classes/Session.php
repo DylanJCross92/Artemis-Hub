@@ -19,7 +19,7 @@ class Session {
 	{
 		//Defaults
 		$path = "/";
-		$domain = "";
+		$domain = ".bfitartemis.com";
 		$secure = isset($_SERVER["HTTPS"]);
 		$httponly = true;
 			
